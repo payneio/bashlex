@@ -11,10 +11,12 @@ def single_quote(s):
 
     l.append("'")
 
-    return ''.join(l)
+    return "".join(l)
+
 
 def double_quote(s):
     return s
+
 
 def legal_number(s):
     try:
@@ -23,23 +25,25 @@ def legal_number(s):
     except ValueError:
         return False
 
+
 def legal_identifier(name):
     pass
 
+
 def removequotes(s, heredoc=False, doublequotes=False):
-    r = ''
+    r = ""
     sindex = 0
     dquote = False
     while sindex < len(s):
         c = s[sindex]
-        if c == '\\':
+        if c == "\\":
             sindex += 1
             if sindex == len(s):
-                r += '\\'
+                r += "\\"
                 return r
             c = s[sindex]
             if ((heredoc and doublequotes) or dquote) and not _shellquote(c):
-                r += '\\'
+                r += "\\"
             r += c
         elif c == "'":
             if (heredoc and doublequotes) or dquote:
@@ -52,7 +56,7 @@ def removequotes(s, heredoc=False, doublequotes=False):
                 else:
                     t += 1
 
-                r += s[sindex + 1:t-1]
+                r += s[sindex + 1 : t - 1]
                 sindex = t
         elif c == '"':
             dquote = not dquote

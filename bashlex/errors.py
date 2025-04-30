@@ -5,4 +5,4 @@ class ParsingError(Exception):
         self.position = position
 
         assert position <= len(s)
-        super(ParsingError, self).__init__('%s (position %d)' % (message, position))
+        super(ParsingError, self).__init__("%s (position %d)" % (message, position))

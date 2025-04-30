@@ -1,0 +1,25 @@
+{
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.ruff": "explicit",
+        "source.organizeImports.ruff": "explicit"
+    },
+    "python.analysis.autoFormatStrings": true,
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.diagnosticMode": "workspace",
+    "python.analysis.fixAll": [
+        "source.unusedImports"
+    ],
+    "python.analysis.inlayHints.functionReturnTypes": true,
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv",
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.unusedImports": "explicit",
+            "source.organizeImports": "explicit",
+            "source.formatDocument": "explicit"
+        }
+    },
+}

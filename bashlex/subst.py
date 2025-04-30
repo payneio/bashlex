@@ -2,6 +2,7 @@ import copy
 
 from bashlex import ast, flags, tokenizer, errors
 
+
 def _recursiveparse(parserobj, base, sindex, tokenizerargs=None):
     # TODO: fix this hack that prevents mutual import
     from bashlex import parser
@@ -9,17 +10,18 @@ def _recursiveparse(parserobj, base, sindex, tokenizerargs=None):
     tok = parserobj.tok
 
     if tokenizerargs is None:
-        tokenizerargs = {'parserstate' : copy.copy(tok._parserstate),
-                         'lastreadtoken' : tok._last_read_token,
-                         'tokenbeforethat' : tok._token_before_that,
-                         'twotokensago' : tok._two_tokens_ago}
+        tokenizerargs = {
+            "parserstate": copy.copy(tok._parserstate),
+            "lastreadtoken": tok._last_read_token,
+            "tokenbeforethat": tok._token_before_that,
+            "twotokensago": tok._two_tokens_ago,
+        }
 
     string = base[sindex:]
     newlimit = parserobj._expansionlimit
     if newlimit is not None:
         newlimit -= 1
-    p = parser._parser(string, tokenizerargs=tokenizerargs,
-                       expansionlimit=newlimit)
+    p = parser._parser(string, tokenizerargs=tokenizerargs, expansionlimit=newlimit)
     node = p.parse()
 
     endp = node.pos[1]
@@ -27,41 +29,47 @@ def _recursiveparse(parserobj, base, sindex, tokenizerargs=None):
 
     return node, endp
 
+
 def _parsedolparen(parserobj, base, sindex):
     copiedps = copy.copy(parserobj.parserstate)
     copiedps.add(flags.parser.CMDSUBST)
     copiedps.add(flags.parser.EOFTOKEN)
     string = base[sindex:]
 
-    tokenizerargs = {'eoftoken' : tokenizer.token(tokenizer.tokentype.RIGHT_PAREN, ')'),
-                     'parserstate' : copiedps,
-                     'lastreadtoken' : parserobj.tok._last_read_token,
-                     'tokenbeforethat' : parserobj.tok._token_before_that,
-                     'twotokensago' : parserobj.tok._two_tokens_ago}
+    tokenizerargs = {
+        "eoftoken": tokenizer.token(tokenizer.tokentype.RIGHT_PAREN, ")"),
+        "parserstate": copiedps,
+        "lastreadtoken": parserobj.tok._last_read_token,
+        "tokenbeforethat": parserobj.tok._token_before_that,
+        "twotokensago": parserobj.tok._two_tokens_ago,
+    }
 
     node, endp = _recursiveparse(parserobj, base, sindex, tokenizerargs)
 
-    if string[endp] != ')':
-        while endp > 0 and string[endp-1] == '\n':
+    if string[endp] != ")":
+        while endp > 0 and string[endp - 1] == "\n":
             endp -= 1
 
     return node, sindex + endp
 
+
 def _extractcommandsubst(parserobj, string, sindex, sxcommand=False):
-    if string[sindex] == '(':
-        raise NotImplementedError('arithmetic expansion')
-        #return _extractdelimitedstring(parserobj, string, sindex, '$(', '(', '(', sxcommand=True)
+    if string[sindex] == "(":
+        raise NotImplementedError("arithmetic expansion")
+        # return _extractdelimitedstring(parserobj, string, sindex, '$(', '(', '(', sxcommand=True)
     else:
         node, si = _parsedolparen(parserobj, string, sindex)
         si += 1
-        return ast.node(kind='commandsubstitution', command=node, pos=(sindex-2, si)), si
+        return ast.node(kind="commandsubstitution", command=node, pos=(sindex - 2, si)), si
+
 
 def _extractprocesssubst(parserobj, string, sindex):
-    #return _extractdelimitedstring(tok, string, sindex, starter, '(', ')', sxcommand=True)
+    # return _extractdelimitedstring(tok, string, sindex, starter, '(', ')', sxcommand=True)
     node, si = _parsedolparen(parserobj, string, sindex)
     return node, si + 1
 
-#def _extractdelimitedstring(parserobj, string, sindex, opener, altopener, closer,
+
+# def _extractdelimitedstring(parserobj, string, sindex, opener, altopener, closer,
 #                            sxcommand=False):
 #    parts = []
 #    incomment = False
@@ -145,75 +153,84 @@ def _extractprocesssubst(parserobj, string, sindex):
 
 #    return parts, i
 
+
 def _paramexpand(parserobj, string, sindex):
     node = None
     zindex = sindex + 1
     c = string[zindex] if zindex < len(string) else None
-    if c and c in '0123456789$#?-!*@':
+    if c and c in "0123456789$#?-!*@":
         # XXX 7685
-        node = ast.node(kind='parameter', value=c,
-                        pos=(sindex, zindex+1))
-    elif c == '{':
+        node = ast.node(kind="parameter", value=c, pos=(sindex, zindex + 1))
+    elif c == "{":
         # XXX 7863
         # TODO not start enough, doesn't consider escaping
-        zindex = string.find('}', zindex + 1)
-        node = ast.node(kind='parameter', value=string[sindex+2:zindex],
-                        pos=(sindex, zindex+1))
+        zindex = string.find("}", zindex + 1)
+        node = ast.node(
+            kind="parameter", value=string[sindex + 2 : zindex], pos=(sindex, zindex + 1)
+        )
         # TODO
         # return _parameterbraceexpand(string, zindex)
-    elif c == '(':
+    elif c == "(":
         return _extractcommandsubst(parserobj, string, zindex + 1)
-    elif c == '[':
-        raise NotImplementedError('arithmetic substitution')
-        #return _extractarithmeticsubst(string, zindex + 1)
+    elif c == "[":
+        raise NotImplementedError("arithmetic substitution")
+        # return _extractarithmeticsubst(string, zindex + 1)
     else:
         tindex = zindex
         for zindex in range(tindex, len(string) + 1):
             if zindex == len(string):
                 break
-            if not string[zindex].isalnum() and not string[zindex] == '_':
+            if not string[zindex].isalnum() and not string[zindex] == "_":
                 break
         temp1 = string[sindex:zindex]
         if temp1:
-            return (ast.node(kind='parameter', value=temp1[1:], pos=(sindex, zindex)),
-                    zindex)
+            return (ast.node(kind="parameter", value=temp1[1:], pos=(sindex, zindex)), zindex)
 
     if zindex < len(string):
         zindex += 1
 
     return node, zindex
 
+
 def _adjustpositions(node_, base, endlimit):
     class v(ast.nodevisitor):
         def visitnode(self, node):
             assert node.pos[1] + base <= endlimit
             node.pos = (node.pos[0] + base, node.pos[1] + base)
+
     visitor = v()
     visitor.visit(node_)
 
+
 def _expandwordinternal(parserobj, wordtoken, qheredocument, qdoublequotes, quoted, isexp):
     # bash/subst.c L8132
-    istring = ''
+    istring = ""
     parts = []
     tindex = [0]
     sindex = [0]
     string = wordtoken.value
+
     def nextchar():
         sindex[0] += 1
         if sindex[0] < len(string):
             return string[sindex[0]]
+
     def peekchar():
-        if sindex[0]+1 < len(string):
-            return string[sindex[0]+1]
+        if sindex[0] + 1 < len(string):
+            return string[sindex[0] + 1]
 
     while True:
         if sindex[0] == len(string):
             break
             # goto finished_with_string
         c = string[sindex[0]]
-        if c in '<>':
-            if (nextchar() != '(' or qheredocument or qdoublequotes or
-                (wordtoken.flags & set([flags.word.DQUOTE, flags.word.NOPROCSUB]))):
+        if c in "<>":
+            if (
+                nextchar() != "("
+                or qheredocument
+                or qdoublequotes
+                or (wordtoken.flags & set([flags.word.DQUOTE, flags.word.NOPROCSUB]))
+            ):
                 sindex[0] -= 1
 
                 # goto add_character
@@ -224,97 +241,99 @@ def _expandwordinternal(parserobj, wordtoken, qheredocument, qdoublequotes, quot
 
                 node, sindex[0] = _extractprocesssubst(parserobj, string, tindex)
 
-                parts.append(ast.node(kind='processsubstitution', command=node,
-                                      pos=(tindex - 2, sindex[0])))
-                istring += string[tindex - 2:sindex[0]]
+                parts.append(
+                    ast.node(kind="processsubstitution", command=node, pos=(tindex - 2, sindex[0]))
+                )
+                istring += string[tindex - 2 : sindex[0]]
                 # goto dollar_add_string
         # TODO
         # elif c == '=':
         #     pass
         # elif c == ':':
         #     pass
-        elif c == '~':
-            if (wordtoken.flags & set([flags.word.NOTILDE, flags.word.DQUOTE]) or
-                (sindex[0] > 0 and not (wordtoken.flags & flags.word.NOTILDE)) or
-                qdoublequotes or qheredocument):
+        elif c == "~":
+            if (
+                wordtoken.flags & set([flags.word.NOTILDE, flags.word.DQUOTE])
+                or (sindex[0] > 0 and not (wordtoken.flags & flags.word.NOTILDE))
+                or qdoublequotes
+                or qheredocument
+            ):
                 wordtoken.flags.clear()
                 wordtoken.flags.add(flags.word.ITILDE)
                 sindex[0] += 1
                 istring += c
             else:
-                stopatcolon = wordtoken.flags & set([flags.word.ASSIGNRHS,
-                                                    flags.word.ASSIGNMENT,
-                                                    flags.word.TILDEEXP])
+                stopatcolon = wordtoken.flags & set(
+                    [flags.word.ASSIGNRHS, flags.word.ASSIGNMENT, flags.word.TILDEEXP]
+                )
                 expand = True
                 for i in range(sindex[0], len(string)):
                     r = string[i]
-                    if r == '/':
+                    if r == "/":
                         break
                     if r in "\\'\"":
                         expand = False
                         break
-                    if stopatcolon and r == ':':
+                    if stopatcolon and r == ":":
                         break
                 else:
                     # go one past the end if we didn't exit early
                     i += 1
 
                 if i > sindex[0] and expand:
-                    node = ast.node(kind='tilde', value=string[sindex[0]:i],
-                                    pos=(sindex[0], i))
+                    node = ast.node(kind="tilde", value=string[sindex[0] : i], pos=(sindex[0], i))
                     parts.append(node)
-                istring += string[sindex[0]:i]
+                istring += string[sindex[0] : i]
                 sindex[0] = i
 
-        elif c == '$' and len(string) > 1:
+        elif c == "$" and len(string) > 1:
             tindex = sindex[0]
             node, sindex[0] = _paramexpand(parserobj, string, sindex[0])
             if node:
                 parts.append(node)
-            istring += string[tindex:sindex[0]]
-        elif c == '`':
+            istring += string[tindex : sindex[0]]
+        elif c == "`":
             tindex = sindex[0]
             # bare instance of ``
-            if nextchar() == '`':
+            if nextchar() == "`":
                 sindex[0] += 1
-                istring += '``'
+                istring += "``"
             else:
                 x = _stringextract(string, sindex[0], "`")
                 if x == -1:
-                    raise errors.ParsingError('bad substitution: no closing "`" '
-                                              'in %s' % string)
+                    raise errors.ParsingError('bad substitution: no closing "`" in %s' % string)
                 else:
                     if wordtoken.flags & flags.word.NOCOMSUB:
                         pass
                     else:
                         sindex[0] = x
 
-                        word = string[tindex+1:sindex[0]]
+                        word = string[tindex + 1 : sindex[0]]
                         command, ttindex = _recursiveparse(parserobj, word, 0)
-                        _adjustpositions(command, tindex+1, len(string))
-                        ttindex += 1 # ttindex is on the closing char
+                        _adjustpositions(command, tindex + 1, len(string))
+                        ttindex += 1  # ttindex is on the closing char
 
                         # assert sindex[0] == ttindex
                         # go one past the closing `
                         sindex[0] += 1
 
-                        node = ast.node(kind='commandsubstitution',
-                                        command=command,
-                                        pos=(tindex, sindex[0]))
+                        node = ast.node(
+                            kind="commandsubstitution", command=command, pos=(tindex, sindex[0])
+                        )
                         parts.append(node)
-                        istring += string[tindex:sindex[0]]
+                        istring += string[tindex : sindex[0]]
 
-        elif c == '\\':
-            istring += string[sindex[0]+1:sindex[0]+2]
+        elif c == "\\":
+            istring += string[sindex[0] + 1 : sindex[0] + 2]
             sindex[0] += 2
         elif c == '"':
             sindex[0] += 1
             continue
 
             # 8513
-            #if qdoublequotes or qheredocument:
+            # if qdoublequotes or qheredocument:
             #    sindex[0] += 1
-            #else:
+            # else:
             #    tindex = sindex[0] + 1
             #    parts, sindex[0] = _stringextractdoublequoted(string, sindex[0])
             #    if tindex == 1 and sindex[0] == len(string):
@@ -335,40 +354,42 @@ def _expandwordinternal(parserobj, wordtoken, qheredocument, qdoublequotes, quot
                 tindex = sindex[0]
                 sindex[0] = string.find("'", sindex[0]) + 1
 
-                istring += string[tindex+1:sindex[0]-1]
+                istring += string[tindex + 1 : sindex[0] - 1]
             else:
                 # this is a single quote inside double quotes, add it
                 istring += c
                 sindex[0] += 1
         else:
-            istring += string[sindex[0]:sindex[0]+1]
+            istring += string[sindex[0] : sindex[0] + 1]
             sindex[0] += 1
 
     if parts:
+
         class v(ast.nodevisitor):
             def visitnode(self, node):
                 assert node.pos[1] + wordtoken.lexpos <= wordtoken.endlexpos
-                node.pos = (node.pos[0] + wordtoken.lexpos,
-                            node.pos[1] + wordtoken.lexpos)
+                node.pos = (node.pos[0] + wordtoken.lexpos, node.pos[1] + wordtoken.lexpos)
+
         visitor = v()
         for node in parts:
             visitor.visit(node)
 
     return parts, istring
 
+
 def _stringextract(string, sindex, charlist, sxvarname=False):
     found = False
     i = sindex
     while i < len(string):
         c = string[i]
-        if c == '\\':
+        if c == "\\":
             if i + 1 < len(string):
                 i += 1
             else:
                 break
-        elif sxvarname and c == '[':
+        elif sxvarname and c == "[":
             ni = _skipsubscript(string, i, 0)
-            if string[ni] == ']':
+            if string[ni] == "]":
                 i = ni
         elif c in charlist:
             found = True

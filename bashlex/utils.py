@@ -14,7 +14,7 @@ class typedset(MutableSet):
 
     def add(self, value):
         if not isinstance(value, self._type):
-            raise ValueError('can only add items of type %s to this set' % self._type)
+            raise ValueError("can only add items of type %s to this set" % self._type)
         self._s.add(value)
 
     def discard(self, value):
@@ -45,13 +45,14 @@ class typedset(MutableSet):
         self._s.__ior__(value)
         return self
 
-    #def __sub__(self, value):
+    # def __sub__(self, value):
     #    if isinstance(value, self._type):
     #        value = set([value])
     #    return self._s.__sub__(value)
 
     def __repr__(self):
         return self._s.__repr__()
+
 
 class frozendict(Mapping):
     def __init__(self, *args, **kwargs):
@@ -71,4 +72,4 @@ class frozendict(Mapping):
         return len(self.__dict)
 
     def __repr__(self):
-        return '<frozendict %s>' % repr(self.__dict)
+        return "<frozendict %s>" % repr(self.__dict)
