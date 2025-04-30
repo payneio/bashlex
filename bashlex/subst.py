@@ -1,6 +1,6 @@
 import copy
 
-from bashlex import ast, flags, tokenizer, errors
+from bashlex import ast, errors, flags, tokenizer
 
 
 def _recursiveparse(parserobj, base, sindex, tokenizerargs=None):

@@ -1,6 +1,7 @@
-import unittest, functools
+import functools
+import unittest
 
-from bashlex import parser, state, flags, ast, errors
+from bashlex import ast, errors, parser
 
 parse = functools.partial(parser.parse, convertpos=True)
 

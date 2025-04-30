@@ -1,6 +1,7 @@
-import os, copy
+import copy
+import os
 
-from bashlex import yacc, tokenizer, state, ast, subst, flags, errors, heredoc
+from bashlex import ast, errors, flags, heredoc, state, subst, tokenizer, yacc
 
 
 def _partsspan(parts):

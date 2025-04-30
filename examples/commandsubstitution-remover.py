@@ -1,11 +1,10 @@
 from __future__ import print_function
 
-import sys
-
 import argparse
+import sys
 from argparse import RawTextHelpFormatter
 
-from bashlex import parser, ast
+from bashlex import ast, parser
 
 
 class nodevisitor(ast.nodevisitor):

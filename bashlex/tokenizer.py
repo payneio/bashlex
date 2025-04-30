@@ -1,6 +1,7 @@
-import re, collections, enum
+import collections
+import enum
 
-from bashlex import flags, shutils, utils, errors, heredoc, state
+from bashlex import errors, flags, heredoc, shutils, utils
 
 sh_syntaxtab = collections.defaultdict(set)
 

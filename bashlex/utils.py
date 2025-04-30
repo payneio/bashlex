@@ -1,8 +1,8 @@
 try:
-    from collections.abc import MutableSet, Mapping
+    from collections.abc import Mapping, MutableSet
 except ImportError:
     # Python 2 fallback
-    from collections import MutableSet, Mapping
+    from collections import Mapping, MutableSet
 
 
 class typedset(MutableSet):

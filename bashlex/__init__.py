@@ -1,4 +1,4 @@
-from bashlex import parser, tokenizer
+from bashlex import parser
 
 parse = parser.parse
 parsesingle = parser.parsesingle

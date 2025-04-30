@@ -1,7 +1,6 @@
 import unittest
 
-from bashlex import tokenizer, state, flags, errors
-
+from bashlex import errors, flags, state, tokenizer
 from bashlex.tokenizer import token as t
 from bashlex.tokenizer import tokentype as tt
 
